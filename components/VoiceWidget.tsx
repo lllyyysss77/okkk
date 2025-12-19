@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { GeminiLiveService } from '../services/geminiLiveService';
 import { ChinaDirectService } from '../services/chinaDirectService';
-import { RegionType, VoiceMessage, DEFAULT_SYSTEM_INSTRUCTION } from '../types';
+import { RegionType, PersonalityType, VoiceMessage, DEFAULT_SYSTEM_INSTRUCTION, PERSONALITY_PRESETS } from '../types';
 
 const Waveform: React.FC<{ volume: number; isConnected: boolean }> = ({ volume, isConnected }) => {
   if (!isConnected) return null;
@@ -34,6 +34,7 @@ const VoiceWidget: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [region, setRegion] = useState<RegionType>(RegionType.GLOBAL);
+  const [personality, setPersonality] = useState<PersonalityType>(PersonalityType.DEFAULT);
   const [isConnecting, setIsConnecting] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
   const [messages, setMessages] = useState<VoiceMessage[]>([]);
@@ -160,19 +161,53 @@ const VoiceWidget: React.FC = () => {
 
           {/* Settings Overlay */}
           {showSettings && (
-            <div className="p-4 border-b bg-indigo-50/50 space-y-3 animate-in fade-in slide-in-from-top-2 duration-200">
-              <label className="block text-[11px] font-bold text-indigo-900 uppercase tracking-wider">
-                System Instruction ({region === RegionType.GLOBAL ? 'Global' : 'China'})
-              </label>
-              <textarea 
-                value={customInstruction[region]}
-                onChange={(e) => updateInstruction(e.target.value)}
-                className="w-full h-24 p-2 text-xs rounded-lg border border-indigo-200 bg-white focus:ring-2 focus:ring-indigo-500 outline-none resize-none"
-                placeholder="How should the AI behave?"
-              />
-              <p className="text-[10px] text-indigo-700 italic">
-                * Reconnect required for changes to take effect.
-              </p>
+            <div className="p-4 border-b bg-indigo-50/50 space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">
+              {/* Personality Selector */}
+              <div>
+                <label className="block text-[11px] font-bold text-indigo-900 uppercase tracking-wider mb-2">
+                  AI Personality 🎭
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  {Object.values(PersonalityType).map((pers) => (
+                    <button
+                      key={pers}
+                      onClick={() => {
+                        setPersonality(pers as PersonalityType);
+                        const preset = PERSONALITY_PRESETS[region][pers as PersonalityType];
+                        setCustomInstruction(prev => ({ ...prev, [region]: preset }));
+                      }}
+                      className={`py-1.5 text-xs rounded-lg font-semibold transition-all ${
+                        personality === pers
+                          ? 'bg-indigo-600 text-white shadow-md'
+                          : 'bg-white text-slate-600 hover:bg-slate-100 border'
+                      }`}
+                    >
+                      {pers === PersonalityType.DEFAULT && '📌 Default'}
+                      {pers === PersonalityType.ACADEMIC && '📚 Academic'}
+                      {pers === PersonalityType.SALES && '💼 Sales'}
+                      {pers === PersonalityType.TEACHER && '👨‍🏫 Teacher'}
+                      {pers === PersonalityType.FRIENDLY && '😊 Friendly'}
+                      {pers === PersonalityType.PROFESSIONAL && '🎯 Pro'}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* System Instruction Editor */}
+              <div>
+                <label className="block text-[11px] font-bold text-indigo-900 uppercase tracking-wider mb-2">
+                  Custom Instruction ({region === RegionType.GLOBAL ? 'Global' : 'China'})
+                </label>
+                <textarea 
+                  value={customInstruction[region]}
+                  onChange={(e) => updateInstruction(e.target.value)}
+                  className="w-full h-20 p-2 text-xs rounded-lg border border-indigo-200 bg-white focus:ring-2 focus:ring-indigo-500 outline-none resize-none"
+                  placeholder="How should the AI behave?"
+                />
+                <p className="text-[10px] text-indigo-700 italic mt-1">
+                  * Reconnect required for changes to take effect.
+                </p>
+              </div>
             </div>
           )}
 

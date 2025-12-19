@@ -1,0 +1,7 @@
+{
+  "name": "Gemini Voice Cloud Plugin",
+  "description": "A high-performance real-time voice interaction widget with specialized routing for Mainland China and global regions. Features hot-pluggable one-line integration style.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
